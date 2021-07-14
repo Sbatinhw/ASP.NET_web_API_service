@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace testManager2
+namespace StringListApi
 {
     public class Program
     {

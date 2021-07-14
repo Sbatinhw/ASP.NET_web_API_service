@@ -6,19 +6,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace testManager2
+namespace StringListApi
 {
     [ApiController]
     [Route("[controller]")]
 
     public class StringListController : ControllerBase
     {
-        List<string> list = new List<string>();
+        ValuesHolder holder;
 
         //работает
-        public StringListController(List<string> str)
+        public StringListController(ValuesHolder str)
         {
-            list = str;
+            holder = str;
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace testManager2
         [HttpGet]
         public string Get()
         {
-            return string.Join("\n", list);
+            return string.Join("\n", holder.list);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace testManager2
         [HttpPost("create")]
         public IActionResult create([FromQuery] string val)
         {
-            list.Add(val);
+            holder.list.Add(val);
             return Ok();
         }
 
@@ -51,9 +51,9 @@ namespace testManager2
         [HttpGet("read")]
         public string Get([FromQuery]int val)
         {
-            if (val < list.Count)
+            if (val < holder.list.Count)
             {
-                return list[val];
+                return holder.list[val];
             }
             else
             {
@@ -68,7 +68,7 @@ namespace testManager2
         [HttpDelete("deleteall")]
         public IActionResult deleteAll()
         {
-            list = new List<string>();
+            holder.list = new List<string>();
             return Ok();
         }
 

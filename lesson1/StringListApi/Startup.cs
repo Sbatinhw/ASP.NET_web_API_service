@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace testManager2
+namespace StringListApi
 {
     public class Startup
     {
@@ -27,7 +27,7 @@ namespace testManager2
             services.AddControllers();
 
             //
-            services.AddSingleton<List<string>>();
+            services.AddSingleton<ValuesHolder>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
