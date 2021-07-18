@@ -11,9 +11,9 @@ namespace WeatherApi
     [ApiController]
     public class CrudWeatherController : ControllerBase
     {
-        ValueHolder holder;
-
-        public CrudWeatherController(ValueHolder _list)
+        ValueHolder holder; // holder надо назвать _holder. Обычно приватные поля начинаются с подчеркивания, а в конструктор передается без "_"
+		
+        public CrudWeatherController(ValueHolder _list) //Имена ValueHolder изящнее будут, если одинаковые. Отличие только в "_"
         {
             holder = _list;
 
@@ -58,7 +58,7 @@ namespace WeatherApi
         {
             return Ok(holder.list);
         }
-
+//Форматируйте текст.
 
 
     }
