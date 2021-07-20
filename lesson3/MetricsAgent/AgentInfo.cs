@@ -7,7 +7,7 @@ namespace MetricsAgent
 {
     public class AgentInfo
     {
-        public int AgentID { get; }
-        public Uri AgentAdress { get; }
+        public int AgentID { get; set; }
+        public Uri AgentAdress { get; set; }
     }
 }
