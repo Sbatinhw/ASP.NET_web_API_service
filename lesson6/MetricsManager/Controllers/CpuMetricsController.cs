@@ -107,15 +107,21 @@ namespace MetricsManager.Controllers
             [FromRoute] TimeSpan toTime
             )
         {
-            var metrics = metricsAgentClient.GetCpuMetrics(new GetAllCpuMetricsRequest
+            logger.LogInformation("Запрос метрик");
+
+            var metrics = repository.GetCluster(fromTime.TotalSeconds, toTime.TotalSeconds);
+
+            var response = new AllCpuMetricsResponse()
             {
-                FromTime = fromTime,
-                ToTime = toTime
-            });
+                Metrics = new List<CpuMetricDto>()
+            };
 
+            foreach (var metric in metrics)
+            {
+                response.Metrics.Add(mapper.Map<CpuMetricDto>(metric));
+            }
 
-
-            return Ok(metrics);
+            return Ok(response);
         }
 
 
