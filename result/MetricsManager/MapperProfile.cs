@@ -2,9 +2,6 @@
 using MetricsManager.Responses;
 using MetricsManager.Models;
 
-
-
-
 namespace MetricsManager
 {
     public class MapperProfile : Profile

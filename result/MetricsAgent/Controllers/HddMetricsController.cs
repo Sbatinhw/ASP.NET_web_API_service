@@ -60,7 +60,7 @@ namespace MetricsAgent.Controllers
             }
 
             Console.WriteLine($"{DateTime.Now} HDD Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"HDD Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"HDD Все метрики. Отдано: {response.Metrics.Count}");
 
             return Ok(JsonSerializer.Serialize(response));
         }
@@ -83,7 +83,7 @@ namespace MetricsAgent.Controllers
             }
 
             Console.WriteLine($"{DateTime.Now} HDD Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"HDD Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"HDD Диапазон: {fromTime} - {toTime} Отдано метрик: {response.Metrics.Count}");
 
             return Ok(JsonSerializer.Serialize(response));
         }

@@ -61,7 +61,7 @@ namespace MetricsAgent.Controllers
             }
 
             Console.WriteLine($"{DateTime.Now} RAM Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"RAM Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"RAM Все метрики. Отдано: {response.Metrics.Count}");
 
             return Ok(JsonSerializer.Serialize(response));
         }
@@ -84,7 +84,7 @@ namespace MetricsAgent.Controllers
             }
 
             Console.WriteLine($"{DateTime.Now} RAM Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"RAM Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"RAM Диапазон: {fromTime} - {toTime} Отдано метрик: {response.Metrics.Count}");
 
             return Ok(JsonSerializer.Serialize(response));
         }

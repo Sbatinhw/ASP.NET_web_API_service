@@ -62,7 +62,7 @@ namespace MetricsAgent.Controllers
             }
 
             Console.WriteLine($"{DateTime.Now} CPU Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"CPU Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"CPU Диапазон: {fromTime} - {toTime} Отдано метрик: {response.Metrics.Count}");
 
             return Ok(JsonSerializer.Serialize(response));
         }
@@ -83,7 +83,7 @@ namespace MetricsAgent.Controllers
             }
 
             Console.WriteLine($"{DateTime.Now} CPU Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"CPU Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"CPU Все метрики. Отдано: {response.Metrics.Count}");
 
             return Ok(JsonSerializer.Serialize( response));
         }
