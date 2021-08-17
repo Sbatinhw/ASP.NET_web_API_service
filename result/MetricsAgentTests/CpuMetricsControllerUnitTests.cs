@@ -47,17 +47,28 @@ namespace MetricsAgentTests
         }
 
         [Fact]
-        public void GetFromCluster_ShouldCall_Create_From_Repository()
+        public void GetFromCluster_ShouldCall_GetCluster_From_Repository()
         {
             //создание заглушек
             mock_repository.Setup(repository => repository.GetCluster(It.IsAny<long>(), It.IsAny<long>())).Returns(new List<CpuMetric>()).Verifiable();
             mock_mapper.Setup(mapper => mapper.Map<CpuMetricDto>(It.IsAny<object>())).Verifiable();
 
             //действие
-            var result = controller.GetFromCluster(It.IsAny<long>(), It.IsAny<long>());// (0, 10);
+            var result = controller.GetFromCluster(It.IsAny<long>(), It.IsAny<long>());
 
-            //
+            //проверка
             mock_repository.Verify(repository => repository.GetCluster(It.IsAny<long>(), It.IsAny<long>()));
+        }
+
+        [Fact]
+        public void GetAll_ShouldCall_GetAll_From_Repository()
+        {
+            mock_repository.Setup(repository => repository.GetAll()).Returns(new List<CpuMetric>()).Verifiable();
+            mock_mapper.Setup(mapper => mapper.Map<CpuMetricDto>(It.IsAny<object>())).Verifiable();
+
+            var result = controller.GetAll();
+
+            mock_repository.Verify(repository => repository.GetAll());
         }
 
     }
