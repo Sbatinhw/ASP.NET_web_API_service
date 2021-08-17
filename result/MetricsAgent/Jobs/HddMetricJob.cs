@@ -32,7 +32,7 @@ namespace MetricsAgent.Jobs
         public Task Execute(IJobExecutionContext context)
         {
             var hddAvailableBytes = _hddCounter;
-            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).TotalSeconds;
             _repository.Create(new HddMetric { Time = time, Value = _hddCounter });
 
             return Task.CompletedTask;

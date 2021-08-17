@@ -7,7 +7,7 @@ namespace MetricsAgent.Requests
 {
     public class HddMetricCreateRequest
     {
-        public TimeSpan Time { get; set; }
+        public double Time { get; set; }
         public long Value { get; set; }
     }
 }

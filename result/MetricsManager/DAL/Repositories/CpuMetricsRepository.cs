@@ -26,7 +26,7 @@ namespace MetricsManager.DAL
                         {
                             //agentid = item.ID,
                             value = item.Value,
-                            time = item.Time.TotalSeconds
+                            time = item.Time
                         });
                 }
         }
@@ -40,7 +40,7 @@ namespace MetricsManager.DAL
                     {
                         agentid = agentId,
                         value = item.Value,
-                        time = item.Time.TotalSeconds
+                        time = item.Time
                     });
             }
         }
@@ -65,7 +65,7 @@ namespace MetricsManager.DAL
                     new
                     {
                         value = item.Value,
-                        time = item.Time.TotalSeconds,
+                        time = item.Time,
                         id = item.ID
                     });
             }

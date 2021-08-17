@@ -30,7 +30,7 @@ namespace MetricsAgent.Jobs
 
             // узнаем когда мы сняли значение метрики.
             //var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).TotalSeconds;
 
             // теперь можно записать что-то при помощи репозитория
 

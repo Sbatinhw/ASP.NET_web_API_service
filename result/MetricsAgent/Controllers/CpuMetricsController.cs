@@ -46,8 +46,8 @@ namespace MetricsAgent.Controllers
 
         [HttpGet("from/{fromTime}/to/{toTime}")]
         public IActionResult GetFromCluster(
-            [FromRoute] long fromTime,
-            [FromRoute] long toTime)
+            [FromRoute] double fromTime,
+            [FromRoute] double toTime)
         {
             var metrics = repository.GetCluster(fromTime, toTime);
 

@@ -32,7 +32,7 @@ namespace MetricsManagerClient
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             //CpuChart.ColumnSeriesValues[0].Values.Add(48d);
-            //CpuChart.hours = CpuChart.hours + 1;
+            CpuChart.hours = CpuChart.hours + 1;
         }
     }
 }

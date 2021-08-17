@@ -10,45 +10,17 @@ namespace MetricsManagerClient
 {
     class AskCpuMetric
     {
-        private readonly HttpClient httpClient = new HttpClient();
-        private string connectionString = "http://localhost:5001";
-        private int agentId;
-        public AskCpuMetric()
+        int agentId = 3;
+        string connectionManager = "http://localhost:5000";
+
+        public List<double> GetMetric(CpuRequest request)
         {
 
-        }
+            string requestAdress = $"{connectionManager}/api/cpumetrics/agent/{agentId}/from/{request.FromTime}/to/{request.ToTime}";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, requestAdress);
+            var httpClient = new HttpClient();
 
-        public List<int> GetMetric1(CpuRequest request)
-        {
-            var fromParameter = request.FromTime.TotalSeconds;
-            var toParameter = request.ToTime.TotalSeconds;
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{connectionString}/api/CpuMetrics/agent/{agentId}/from/{fromParameter}/to/{toParameter}");
-            List<int> result = new List<int>();
-
-            try
-            {
-                HttpResponseMessage response = httpClient.SendAsync(httpRequest).Result;
-                using var responseStream = response.Content.ReadAsStreamAsync().Result;
-                var list = JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result.Metrics;
-                foreach (var metric in list)
-                {
-                    result.Add(metric.Value);
-                }
-            }
-            catch(Exception ex)
-            {
-                //Console.WriteLine(ex);
-            }
-            return result;
-        }
-
-        public List<int> GetMetric(CpuRequest request)
-        {
-            var fromParameter = request.FromTime.TotalSeconds;
-            var toParameter = request.ToTime.TotalSeconds;
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{connectionString}/api/cpumetrics/agent/{agentId}/from/{fromParameter}/to/{toParameter}");
-            List<int> result = new List<int>();
-            //Console.WriteLine($"Получение CPU у {request.Id}");
+            List<double> result = new List<double>();
 
             try
             {
@@ -56,21 +28,24 @@ namespace MetricsManagerClient
 
                 using var responseStream = response.Content.ReadAsStreamAsync().Result;
 
-                //Console.WriteLine("успешно");
+                var res = JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result;
 
-                var list = JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result.Metrics;
-                foreach (var metric in list)
+                foreach(var metric in res.Metrics)
                 {
                     result.Add(metric.Value);
                 }
+                
             }
             catch (Exception ex)
             {
+                //Console.WriteLine("не успешно");
 
             }
             return result;
-        }
 
+
+
+        }
 
     }
 }

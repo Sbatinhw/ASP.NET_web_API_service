@@ -8,8 +8,8 @@ namespace MetricsManager.DAL
     public class GetByIdCpuMetricsRequest
     {
         public int Id { get; set; }
-        public TimeSpan FromTime { get; set; }
-        public TimeSpan ToTime { get; set; }
+        public double FromTime { get; set; }
+        public double ToTime { get; set; }
         public string Uri { get; set; }
     }
 }

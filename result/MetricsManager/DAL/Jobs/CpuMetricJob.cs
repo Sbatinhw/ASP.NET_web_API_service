@@ -86,8 +86,8 @@ namespace MetricsManager.Jobs
                     ///создаём список не сохраненных метрик
                     metricList = metricsAgentClient.GetByIdCpuMetrics(new GetByIdCpuMetricsRequest()
                     {
-                        FromTime = TimeSpan.FromSeconds(timeStart),
-                        ToTime = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+                        FromTime = TimeSpan.FromSeconds(timeStart).TotalSeconds,
+                        ToTime = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).TotalSeconds,
                         Id = agent.AgentID,
                         Uri = agent.AgentAdress
                     }).Metrics;

@@ -9,7 +9,7 @@ namespace MetricsAgent.DAL
     {
         IList<T> GetAll();
 
-        IList<T> GetCluster(long fromTime, long toTime);
+        IList<T> GetCluster(double fromTime, double toTime);
 
         T GetByID(int id);
 

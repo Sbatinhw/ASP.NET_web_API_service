@@ -32,8 +32,8 @@ namespace MetricsManager.Client
         public AllCpuMetricsResponse GetByIdCpuMetrics(GetByIdCpuMetricsRequest request)
         {
             string agentUri = request.Uri;
-            var fromParameter = request.FromTime.TotalSeconds;
-            var toParameter = request.ToTime.TotalSeconds;
+            var fromParameter = request.FromTime;
+            var toParameter = request.ToTime;
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{agentUri}/api/cpumetrics/from/{fromParameter}/to/{toParameter}");
             var result = new AllCpuMetricsResponse();
 
@@ -51,6 +51,7 @@ namespace MetricsManager.Client
 
                 var res = JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result;
 
+                Console.WriteLine($"Получено {res.Metrics.Count}");
 
                 return res;
 

@@ -7,7 +7,7 @@ namespace MetricsManager.DAL
 {
     public class CpuMetricsCreateRequest
     {
-        public TimeSpan Time { get; set; }
+        public double Time { get; set; }
         public int Value { get; set; }
     }
 }

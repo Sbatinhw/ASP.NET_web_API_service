@@ -26,7 +26,7 @@ namespace MetricsAgent.DAL
                         {
                             //value = Convert.ToInt64( item.Value),
                             value = item.Value,
-                            time = item.Time.TotalSeconds
+                            time = item.Time
                         });
                 }
         }
@@ -51,7 +51,7 @@ namespace MetricsAgent.DAL
                     new
                     {
                         value = item.Value,
-                        time = item.Time.TotalSeconds,
+                        time = item.Time,
                         id = item.ID
                     });
             }
@@ -65,7 +65,7 @@ namespace MetricsAgent.DAL
             }
         }
 
-        public IList<RamMetric> GetCluster(long fromTime, long toTime)
+        public IList<RamMetric> GetCluster(double fromTime, double toTime)
         {
             using (var connection = new SQLiteConnection(ConnectionString))
             {

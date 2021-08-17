@@ -23,7 +23,7 @@ namespace MetricsAgent.Jobs
         public Task Execute(IJobExecutionContext context)
         {
             var ramAvailableMBytes = Convert.ToInt32(_ramCounter.NextValue());
-            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).TotalSeconds;
             _repository.Create(new RamMetric { Time = time, Value = ramAvailableMBytes });
 
             return Task.CompletedTask;

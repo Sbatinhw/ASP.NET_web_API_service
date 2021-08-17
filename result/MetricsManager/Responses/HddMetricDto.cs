@@ -7,7 +7,7 @@ namespace MetricsManager.Responses
 {
     public class HddMetricDto
     {
-        public TimeSpan Time { get; set; }
+        public double Time { get; set; }
         public long Value { get; set; }
         public int Id { get; set; }
     }

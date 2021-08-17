@@ -9,6 +9,6 @@ namespace MetricsManager.Models
     {
         public int ID { get; set; }
         public long Value { get; set; }
-        public TimeSpan Time { get; set; }
+        public double Time { get; set; }
     }
 }

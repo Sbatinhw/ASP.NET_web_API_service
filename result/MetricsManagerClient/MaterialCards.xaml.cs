@@ -32,12 +32,10 @@ namespace MetricsManagerClient
             {
                 new ColumnSeries
                 {
-                    Values = new ChartValues<int> (new AskCpuMetric().GetMetric(
+                    Values = new ChartValues<double> (new AskCpuMetric().GetMetric(
                         new CpuRequest{ 
-                            //FromTime = new TimeSpan (DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(hours)).ToUnixTimeSeconds()),
-                            //ToTime = new TimeSpan(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                            FromTime = TimeSpan.FromSeconds(TimeSpan.FromSeconds(DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(hours)).ToUnixTimeSeconds()).TotalSeconds),
-                            ToTime = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                            FromTime = TimeSpan.FromSeconds(TimeSpan.FromSeconds(DateTimeOffset.UtcNow.Subtract(TimeSpan.FromHours(hours)).ToUnixTimeSeconds()).TotalSeconds).TotalSeconds,
+                            ToTime = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds()).TotalSeconds
                         }))
                 }
             };

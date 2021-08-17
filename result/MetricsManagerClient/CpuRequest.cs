@@ -8,9 +8,7 @@ namespace MetricsManagerClient
 {
     class CpuRequest
     {
-        public TimeSpan FromTime { get; set; }
-        public TimeSpan ToTime { get; set; }
-        public int agentId { get; set; }
-
+        public double FromTime { get; set; }
+        public double ToTime { get; set; }
     }
 }
