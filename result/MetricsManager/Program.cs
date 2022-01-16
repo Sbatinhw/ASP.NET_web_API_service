@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NLog.Web;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace MetricsManager
 {
@@ -14,22 +16,21 @@ namespace MetricsManager
     {
         public static void Main(string[] args)
         {
-            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            Logger logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
             try
             {
                 logger.Debug("init main");
                 CreateHostBuilder(args).Build().Run();
             }
-            catch(Exception exception)
+            catch(Exception ex)
             {
-                logger.Error(exception, "Stopped program because of exception");
+                logger.Error(ex, "Stopped program because of exception");
                 throw;
             }
             finally
             {
                 NLog.LogManager.Shutdown();
             }
-
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -37,11 +38,10 @@ namespace MetricsManager
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                })
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders(); // создание провайдеров логирования
-                logging.SetMinimumLevel(LogLevel.Trace); // устанавливаем минимальный уровень логирования
-            }).UseNLog();
+                }).ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                }).UseNLog();
     }
 }

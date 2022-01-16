@@ -1,39 +1,48 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Data.SQLite;
-using Dapper;
-using MetricsManager.Models;
+﻿using Dapper;
+using MetricsAgent.Infrastructure.Handlers;
+using MetricsManager.DAL.Interfaces.Metrics;
+using MetricsManager.DAL.Models;
 using System;
+using System.Collections.Generic;
+using System.Data.SQLite;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace MetricsManager.DAL
+namespace MetricsManager.DAL.Repositories
 {
-    public class HddMetricRepository : IHddMetricRepository
+    public class HddMetricRepository : IHddMetricsRepository
     {
-        private const string ConnectionString = "Data Source=metrics.db;Version=3;Pooling=true;Max Pool Size=100;";
-
+        private const string connectionString = @"Data Source=metrics.db; Version=3;Pooling=True;Max Pool Size=100;";
         public HddMetricRepository()
         {
             SqlMapper.AddTypeHandler(new TimeSpanHandler());
         }
-
-        public void Create(HddMetric item)
+        public async Task Create(HddMetric item)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            if (await Exists(item))
             {
-                connection.Execute("INSERT INTO hddmetrics(value, time) VALUES(@value, @time)",
+                return;
+            }
+            await using (var connection = new SQLiteConnection(connectionString))
+            {
+                await connection.ExecuteAsync(
+                    "INSERT INTO hddmetrics(agentid, metricid, value, time) VALUES(@agentid, @metricid,@value, @time)",
                     new
                     {
-                        value = Convert.ToInt64( item.Value),
-                        time = item.Time
+                        agentid = item.AgentId,
+                        metricid = item.MetricId,
+                        value = item.Value,
+                        time = item.Time.TotalSeconds
                     });
             }
         }
 
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
             {
-                connection.Execute("DELETE FROM hddmetrics WHERE id=@id",
+                await connection.ExecuteAsync(
+                    "DELETE FROM hddmetrics WHERE id=@id",
                     new
                     {
                         id = id
@@ -41,62 +50,94 @@ namespace MetricsManager.DAL
             }
         }
 
-        public void Update(HddMetric item)
+        public async Task<IList<HddMetric>> GetAll()
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
             {
-                connection.Execute("UPDATE hddmetrics SET value = @value, time = @time WHERE id=@id",
-                    new
-                    {
-                        value = item.Value,
-                        time = item.Time,
-                        id = item.ID
-                    });
+                return connection.Query<HddMetric>("SELECT Id, AgentId, MetricId, Value, Time FROM hddmetrics").ToList();
             }
         }
 
-        public IList<HddMetric> GetCluster(double fromTime, double toTime)
+        public async Task<HddMetric> GetById(int id)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
             {
-                return connection.Query<HddMetric>("SELECT id, value, time FROM hddmetrics WHERE time>@fromTime AND time<@toTime",
+                HddMetric result = await connection.QueryFirstOrDefaultAsync<HddMetric>(
+                    "SELECT Id, AgentId, MetricId, Value, Time FROM hddmetrics WHERE id=@id",
                     new
                     {
-                        fromTime = fromTime,
-                        toTime = toTime
+                        id = id
+                    });
+                return result;
+            }
+        }
+
+        public async Task<List<HddMetric>> GetByTimePeriod(int agentId, TimeSpan fromTime, TimeSpan toTime)
+        {
+            await using (var connection = new SQLiteConnection(connectionString))
+            {
+                return connection.Query<HddMetric>(
+                    "SELECT Id, AgentId, MetricId, Value, Time FROM hddmetrics WHERE Time >= @fromTime AND Time <= @toTime AND AgentId = @agentId",
+                    new
+                    {
+                        fromTime = fromTime.TotalSeconds,
+                        toTime = toTime.TotalSeconds,
+                        agentId = agentId
                     }).ToList();
             }
         }
 
-        public IList<HddMetric> GetAll()
+        public async Task<HddMetric> GetLastValue(int agentId)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
             {
-                return connection.Query<HddMetric>("SELECT Id, Time, Value FROM hddmetrics").ToList();
+                HddMetric result = await connection.QueryFirstOrDefaultAsync<HddMetric>(
+                    "SELECT Id, AgentId, MetricId, Value, Time FROM hddmetrics WHERE AgentId=@agentid AND Time=(SELECT MAX(Time) FROM hddmetrics WHERE AgentId=@agentid)",
+                    new
+                    {
+                        agentid = agentId
+                    });
+                return result;
             }
         }
 
-
-
-        public HddMetric GetByID(int id)
+        public async Task Update(HddMetric item)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
             {
-                return connection.QuerySingle<HddMetric>("SELECT Id, Time, Value FROM hddmetrics WHERE id=@id",
-                    new { id = id });
+                await connection.ExecuteAsync("UPDATE hddmetrics SET value = @value, time = @time, metricid = @metricid, agentid = @agentid WHERE id=@id",
+                    new
+                    {
+                        value = item.Value,
+                        time = item.Time.TotalSeconds,
+                        id = item.Id,
+                        metricid = item.MetricId,
+                        agentid = item.AgentId
+                    });
             }
         }
 
-        
-
-        public IList<HddMetric> GetClusterId(double fromTime, double toTime, int agentId)
+        public async Task<bool> Exists(HddMetric item)
         {
-            throw new NotImplementedException();
-        }
+            HddMetric result;
+            await using (var connection = new SQLiteConnection(connectionString))
+            {
+                result = await connection.QueryFirstOrDefaultAsync<HddMetric>("SELECT Id, AgentId, MetricId, Value, Time FROM hddmetrics WHERE AgentId=@agentid AND MetricId=@metricid AND Value=@value AND Time=@time",
+                    new
+                    {
+                        agentid = item.AgentId,
+                        metricid = item.MetricId,
+                        value = item.Value,
+                        time = item.Time.TotalSeconds
+                    });
+            }
 
-        public void Create(HddMetric item, int agentIs)
-        {
-            throw new NotImplementedException();
+            if (result != null)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

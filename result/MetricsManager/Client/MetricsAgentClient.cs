@@ -1,102 +1,77 @@
-﻿using System;
+﻿using MetricsManager.Request.RequestToAgent;
+using MetricsManager.Request.ResponseFromAgent.Responses;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Text.Json;
-using MetricsManager.DAL;
-using MetricsManager.Responses;
-using System.Data.SQLite;
-using MetricsManager.Models;
-using Dapper;
-using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace MetricsManager.Client
 {
     public class MetricsAgentClient : IMetricsAgentClient
     {
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<MetricsAgentClient> _logger;
-        private const string ConnectionString = "Data Source=metrics.db;Version=3;Pooling=true;Max Pool Size=100;";
+        private readonly HttpClient httpClient;
+        private readonly ILogger logger;
 
-
-        public MetricsAgentClient(
-            HttpClient httpClient, 
-            ILogger<MetricsAgentClient> logger)
+        public MetricsAgentClient(HttpClient httpClient, ILogger<MetricsAgentClient> logger)
         {
-            _httpClient = httpClient;
-            _logger = logger;
+            this.httpClient = httpClient;
+            this.logger = logger;
         }
-
-        public AllCpuMetricsResponse GetByIdCpuMetrics(GetByIdCpuMetricsRequest request)
+        public async Task<ResponseCpuMetricFromAgent> GetCpuMetric(RequestCpuMetricToAgent request)
         {
-            string agentUri = request.Uri;
-            var fromParameter = request.FromTime;
-            var toParameter = request.ToTime;
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{agentUri}/api/cpumetrics/from/{fromParameter}/to/{toParameter}");
-            var result = new AllCpuMetricsResponse();
-
-            //Console.WriteLine($"Получение CPU у {request.Id}");
-
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ConnectionLine);
             try
             {
-                HttpResponseMessage response = _httpClient.SendAsync(httpRequest).Result;
+                HttpResponseMessage response = await httpClient.SendAsync(httpRequest);
 
-                using var responseStream = response.Content.ReadAsStreamAsync().Result;
-
-                //Console.WriteLine("успешно");
-
-                //return JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result;
-
-                var res = JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result;
-
-                Console.WriteLine($"Получено {res.Metrics.Count}");
-
-                return res;
-
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<ResponseCpuMetricFromAgent>(responseStream);
             }
             catch (Exception ex)
             {
-                //Console.WriteLine("не успешно");
-
-                _logger.LogError(ex.Message);
+                logger.LogError(ex.Message);
             }
-            return new AllCpuMetricsResponse { Metrics = null };
 
+            return null;
         }
 
-        public AllCpuMetricsResponse GetCpuMetrics(GetAllCpuMetricsRequest request)
+        public async Task<ResponseHddMetricFromAgent> GetHddMetric(RequestHddMetricToAgent request)
         {
-            var fromParameter = request.FromTime.TotalSeconds;
-            var toParameter = request.ToTime.TotalSeconds;
-
-            AllCpuMetricsResponse allMetrics = new AllCpuMetricsResponse() { Metrics = new List<CpuMetricDto>() };
-            List<string> agentsUri = new List<string>();
-
-            using (var connection = new SQLiteConnection(ConnectionString))
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ConnectionLine);
+            try
             {
-                agentsUri = connection.Query<string>("SELECT agenturi FROM agents").ToList();
+                HttpResponseMessage response = await httpClient.SendAsync(httpRequest);
+
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<ResponseHddMetricFromAgent>(responseStream);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
             }
 
-            foreach(var agentUri in agentsUri)
-            {
-                var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"{agentUri}/api/cpumetrics/from/{fromParameter}/to/{toParameter}");
-                try
-                {
-                    HttpResponseMessage response = _httpClient.SendAsync(httpRequest).Result;
-
-                    using var responseStream = response.Content.ReadAsStreamAsync().Result;
-                    allMetrics.Metrics.AddRange( JsonSerializer.DeserializeAsync<AllCpuMetricsResponse>(responseStream).Result.Metrics);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex.Message);
-                }
-            }
-            return allMetrics;
-
+            return null;
         }
 
+        public async Task<ResponseRamMetricFromAgent> GetRamMetric(RequestRamMetricToAgent request)
+        {
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, request.ConnectionLine);
+            try
+            {
+                HttpResponseMessage response = await httpClient.SendAsync(httpRequest);
+
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                return await JsonSerializer.DeserializeAsync<ResponseRamMetricFromAgent>(responseStream);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+            }
+
+            return null;
+        }
     }
 }

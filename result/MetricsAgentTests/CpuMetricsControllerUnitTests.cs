@@ -1,75 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MetricsAgent.Controllers;
-using MetricsAgent.DAL;
-using MetricsAgent.Models;
-using MetricsAgent;
-using Moq;
-using Xunit;
 using AutoMapper;
+using MetricsAgent.Controllers;
+using MetricsAgent.DAL.Interfaces;
+using MetricsAgent.DAL.Models;
+using MetricsAgent.DAL.Repositories;
+using MetricsAgent.Infrastructure.Mapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace MetricsAgentTests
 {
     public class CpuMetricsControllerUnitTests
     {
         private CpuMetricsController controller;
-        private Mock<ICpuMetricsRepository> mock_repository;
-        private Mock<IMapper> mock_mapper;
-        private Mock<ILogger<CpuMetricsController>> mock_logger;
-
+        private Mock<ICpuMetricsRepository> repositoryMock;
+        private Mock<ILogger<CpuMetricsController>> loggerMock;
+        private Mock<IMapper> mapperMock;
         public CpuMetricsControllerUnitTests()
         {
-            mock_repository = new Mock<ICpuMetricsRepository>();
-            mock_mapper = new Mock<IMapper>();
-            mock_logger = new Mock<ILogger<CpuMetricsController>>();
-
-            controller = new CpuMetricsController(mock_repository.Object, mock_mapper.Object, mock_logger.Object);
+            repositoryMock = new Mock<ICpuMetricsRepository>();
+            mapperMock = new Mock<IMapper>();
+            loggerMock = new Mock<ILogger<CpuMetricsController>>();
+            controller = new CpuMetricsController(repositoryMock.Object, mapperMock.Object, loggerMock.Object);
         }
-
         [Fact]
-        public void Create_ShouldCall_Create_From_Repository()
+        public void GetMetricsFromCluster_ReturnsOk()
         {
-            // устанавливаем параметр заглушки
-            // в заглушке прописываем что в репозиторий прилетит CpuMetric объект
-            mock_repository.Setup(repository => repository.Create(It.IsAny<CpuMetric>())).Verifiable();
-            mock_mapper.Setup(mapper => mapper.Map<CpuMetricDto>(It.IsAny<object>())).Verifiable();
+            //arrange
+            TimeSpan fromTime = TimeSpan.FromSeconds(0);
+            TimeSpan toTime = TimeSpan.FromSeconds(1);
+            repositoryMock.Setup(repository => repository.GetByTimePeriod(fromTime, toTime)).Returns(Task.FromResult(new List<CpuMetric>()));
 
-            // выполняем действие на контроллере
-            var result = controller.Create(new MetricsAgent.Requests.CpuMetricCreateRequest { Time = TimeSpan.FromSeconds(1), Value = 50 });
+            //act
+            IActionResult result = controller.GetMetricsByTimePeriod(fromTime, toTime).Result;
 
-            // проверяем заглушку на то, что пока работал контроллер
-            // действительно вызвался метод Create репозитория с нужным типом объекта в параметре
-            mock_repository.Verify(repository => repository.Create(It.IsAny<CpuMetric>()), Times.AtMostOnce());
+            //assert
+            _ = Assert.IsAssignableFrom<IActionResult>(result);
         }
-
-        [Fact]
-        public void GetFromCluster_ShouldCall_GetCluster_From_Repository()
-        {
-            //создание заглушек
-            mock_repository.Setup(repository => repository.GetCluster(It.IsAny<long>(), It.IsAny<long>())).Returns(new List<CpuMetric>()).Verifiable();
-            mock_mapper.Setup(mapper => mapper.Map<CpuMetricDto>(It.IsAny<object>())).Verifiable();
-
-            //действие
-            var result = controller.GetFromCluster(It.IsAny<long>(), It.IsAny<long>());
-
-            //проверка
-            mock_repository.Verify(repository => repository.GetCluster(It.IsAny<long>(), It.IsAny<long>()));
-        }
-
-        [Fact]
-        public void GetAll_ShouldCall_GetAll_From_Repository()
-        {
-            mock_repository.Setup(repository => repository.GetAll()).Returns(new List<CpuMetric>()).Verifiable();
-            mock_mapper.Setup(mapper => mapper.Map<CpuMetricDto>(It.IsAny<object>())).Verifiable();
-
-            var result = controller.GetAll();
-
-            mock_repository.Verify(repository => repository.GetAll());
-        }
-
     }
 }

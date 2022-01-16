@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using MetricsManager.DAL.Interfaces.Info;
+using MetricsManager.DAL.Models;
+using MetricsManager.Response;
+using MetricsManager.Response.DTO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace MetricsManager.Controllers
 {
@@ -12,44 +18,82 @@ namespace MetricsManager.Controllers
     [ApiController]
     public class AgentsController : ControllerBase
     {
+        private IAgentsInfoRepository repository;
+        private readonly IMapper mapper;
+        private ILogger logger;
 
-        private readonly ILogger<AgentsController> _logger;
-
-        public AgentsController(ILogger<AgentsController> logger)
+        public AgentsController(IAgentsInfoRepository repository, IMapper mapper, ILogger<AgentsController> logger)
         {
-            _logger = logger;
+            this.repository = repository;
+            this.mapper = mapper;
+            this.logger = logger;
         }
-
-        [HttpGet("allregistered")]
-        public IActionResult AllRegistered()
-        {
-            _logger.LogInformation("Запрос всех зарегестрированных пользователей");
-
-            return Ok();
-        }
-
         [HttpPost("register")]
-        public IActionResult RegisterAgent([FromBody] AgentInfo agentInfo)
+        public async Task<IActionResult> RegisterAgent([FromBody] AgentInfo agentInfo)
         {
-            _logger.LogInformation($"Регистрация пользователя {agentInfo.AgentAdress} {agentInfo.AgentID}");
-
+            logger.LogInformation("Добавление нового агента");
+            await repository.Create(agentInfo);
             return Ok();
         }
 
         [HttpPut("enable/{agentId}")]
-        public IActionResult EnableAgentById([FromRoute] int agentId)
+        public async Task<IActionResult> EnableAgentById([FromRoute] int agentId)
         {
-            _logger.LogInformation($"Активация агента с ID {agentId}");
-
+            logger.LogInformation($"Активация агента {agentId}");
+            await repository.Enable(agentId);
             return Ok();
         }
 
         [HttpPut("disable/{agentId}")]
-        public IActionResult DisableAgentById([FromRoute] int agentId)
+        public async Task<IActionResult> DisableAgentById([FromRoute] int agentId)
         {
-            _logger.LogInformation($"Деактивация агента с ID {agentId}");
-
+            logger.LogInformation($"Деактивация агента {agentId}");
+            await repository.Disable(agentId);
             return Ok();
+        }
+        [HttpGet("getall")]
+        public async Task<IActionResult> GetAll()
+        {
+            logger.LogInformation("Запрос всех агентов");
+
+            GetAgentsInfoResponse response = new GetAgentsInfoResponse()
+            {
+                Agents = new List<AgentInfoDto>()
+            };
+
+            List<AgentInfo> agents = new List<AgentInfo>();
+            agents.AddRange(await repository.GetAll());
+
+            foreach(var agent in agents)
+            {
+                response.Agents.Add(mapper.Map<AgentInfoDto>(agent));
+            }
+
+            logger.LogInformation($"Передано агентов {response.Agents.Count}");
+
+            return Ok(JsonSerializer.Serialize(response));
+        }
+        [HttpGet("getbyid{agentId}")]
+        public async Task<IActionResult> GetById([FromRoute] int agentId)
+        {
+            logger.LogInformation($"Запрос агентоа {agentId}");
+
+            GetAgentsInfoResponse response = new GetAgentsInfoResponse()
+            {
+                Agents = new List<AgentInfoDto>()
+            };
+
+            List<AgentInfo> agents = new List<AgentInfo>();
+            agents.Add(await repository.GetById(agentId));
+
+            foreach (var agent in agents)
+            {
+                response.Agents.Add(mapper.Map<AgentInfoDto>(agent));
+            }
+
+            logger.LogInformation($"Передано агентов {response.Agents.Count}");
+
+            return Ok(JsonSerializer.Serialize(response));
         }
 
     }

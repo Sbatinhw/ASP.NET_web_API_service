@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MetricsAgent.Models
+namespace MetricsAgent.DAL.Models
 {
     public class HddMetric
     {
-        public int ID { get; set; }
+        public int Id { get; set; }
         public long Value { get; set; }
-        public double Time { get; set; }
+        public TimeSpan Time { get; set; }
     }
 }

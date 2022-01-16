@@ -1,20 +1,16 @@
-﻿using System;
+﻿using MetricsManager.Request.RequestToAgent;
+using MetricsManager.Request.ResponseFromAgent.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MetricsManager.Responses;
-using MetricsManager.DAL;
 
 namespace MetricsManager.Client
 {
     public interface IMetricsAgentClient
     {
-        //AllRamMetricsResponse GetAllRamMetrics(GetAllRamMetricsApiRequest request);
-        //AllHddMetricsResponse GetAllHddMetrics(GetAllHddMetricsApiRequest request);
-        AllCpuMetricsResponse GetCpuMetrics(GetAllCpuMetricsRequest request);
-
-        AllCpuMetricsResponse GetByIdCpuMetrics(GetByIdCpuMetricsRequest request);
-
-
+        Task<ResponseCpuMetricFromAgent> GetCpuMetric(RequestCpuMetricToAgent request);
+        Task<ResponseRamMetricFromAgent> GetRamMetric(RequestRamMetricToAgent request);
+        Task<ResponseHddMetricFromAgent> GetHddMetric(RequestHddMetricToAgent request);
     }
 }

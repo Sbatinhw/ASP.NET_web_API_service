@@ -1,94 +1,56 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using MetricsAgent.DAL.Interfaces;
+using MetricsAgent.DAL.Models;
+using MetricsAgent.Responses;
+using MetricsAgent.Responses.DTO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Data.SQLite;
-using MetricsAgent.DAL;
-using MetricsAgent.Requests;
-using MetricsAgent.Responses;
-using AutoMapper;
-using MetricsAgent.Models;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace MetricsAgent.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/metrics/cpu")]
     [ApiController]
     public class CpuMetricsController : ControllerBase
     {
         private ICpuMetricsRepository repository;
         private readonly IMapper mapper;
-        private readonly ILogger<CpuMetricsController> logger;
+        private ILogger logger;
 
-        public CpuMetricsController(
-            ICpuMetricsRepository repository, 
-            IMapper mapper,
-            ILogger<CpuMetricsController> logger)
+        public CpuMetricsController(ICpuMetricsRepository repository, IMapper mapper, ILogger<CpuMetricsController> logger)
         {
             this.repository = repository;
             this.mapper = mapper;
             this.logger = logger;
         }
-
-        [HttpPost("create")]
-        public IActionResult Create ([FromBody] CpuMetricCreateRequest request)
+        
+        [HttpGet("cluster/from/{fromTime}/to/{toTime}")]
+        public async Task<IActionResult> GetMetricsByTimePeriod (
+            [FromRoute] TimeSpan fromTime,
+            [FromRoute] TimeSpan toTime)
         {
-            repository.Create(new CpuMetric { Time = request.Time, Value = request.Value });
+            logger.LogInformation($"Запрос метрик ЦПУ с {fromTime} по {toTime}");
 
-            Console.WriteLine($"{DateTime.Now} CPU Добавлена метрика: {request.Time} {request.Value}");
-            logger.LogInformation($"CPU Добавлена метрика: {request.Time} {request.Value}");
-
-            return Ok();
-        }
-
-        [HttpGet("from/{fromTime}/to/{toTime}")]
-        public IActionResult GetFromCluster(
-            [FromRoute] double fromTime,
-            [FromRoute] double toTime)
-        {
-            var metrics = repository.GetCluster(fromTime, toTime);
-
-            var response = new AllCpuMetricsResponse()
+            GetCpuMetricsResponse result = new GetCpuMetricsResponse
             {
                 Metrics = new List<CpuMetricDto>()
             };
 
-            foreach(var metric in metrics)
-            {
-                response.Metrics.Add(mapper.Map<CpuMetricDto>(metric));
-            }
-
-            Console.WriteLine($"{DateTime.Now} CPU Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"CPU Диапазон: {fromTime} - {toTime} Отдано метрик: {response.Metrics.Count}");
-
-            return Ok(JsonSerializer.Serialize(response));
-        }
-
-        [HttpGet("all")]
-        public IActionResult GetAll()
-        {
-            var metrics = repository.GetAll();
-
-            var response = new AllCpuMetricsResponse()
-            {
-                Metrics = new List<CpuMetricDto>()
-            };
+            List<CpuMetric> metrics = await repository.GetByTimePeriod(fromTime, toTime);
 
             foreach(var metric in metrics)
             {
-                response.Metrics.Add(mapper.Map<CpuMetricDto>(metric));
+                result.Metrics.Add(mapper.Map<CpuMetricDto>(metric));
             }
 
-            Console.WriteLine($"{DateTime.Now} CPU Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"CPU Все метрики. Отдано: {response.Metrics.Count}");
+            logger.LogInformation($"Отдано метрик ЦПУ {result.Metrics.Count}");
 
-            return Ok(JsonSerializer.Serialize( response));
+            return Ok(JsonSerializer.Serialize(result));
         }
-
     }
-
-    
 }

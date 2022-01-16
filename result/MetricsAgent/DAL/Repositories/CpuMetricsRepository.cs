@@ -1,40 +1,42 @@
-﻿using System;
+﻿using Dapper;
+using MetricsAgent.DAL.Interfaces;
+using MetricsAgent.DAL.Models;
+using MetricsAgent.Infrastructure.Handlers;
+using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Data.SQLite;
-using Dapper;
-using MetricsAgent.Models;
 
-namespace MetricsAgent.DAL
+namespace MetricsAgent.DAL.Repositories
 {
     public class CpuMetricsRepository : ICpuMetricsRepository
     {
-        private const string ConnectionString = "Data Source=metrics.db;Version=3;Pooling=true;Max Pool Size=100;";
-
+        private const string connectionString = @"Data Source=metrics.db; Version=3;Pooling=True;Max Pool Size=100;";
         public CpuMetricsRepository()
         {
             SqlMapper.AddTypeHandler(new TimeSpanHandler());
         }
-
-        public void Create(CpuMetric item)
+        public async Task Create(CpuMetric item)
         {
-                using (var connection = new SQLiteConnection(ConnectionString))
-                {
-                    connection.Execute("INSERT INTO cpumetrics(value, time) VALUES(@value, @time)",
-                        new
-                        {
-                            value = item.Value,
-                            time = item.Time
-                        });
-                }
+            await using(var connection = new SQLiteConnection(connectionString))
+            {
+                await connection.ExecuteAsync(
+                    "INSERT INTO cpumetrics(value, time) VALUES(@value, @time)",
+                    new
+                    {
+                        value = item.Value,
+                        time = item.Time.TotalSeconds
+                    });
+            }
         }
 
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using(var connection = new SQLiteConnection(connectionString))
             {
-                connection.Execute("DELETE FROM cpumetrics WHERE id=@id",
+                await connection.ExecuteAsync(
+                    "DELETE FROM cpumetrics WHERE id=@id",
                     new
                     {
                         id = id
@@ -42,53 +44,54 @@ namespace MetricsAgent.DAL
             }
         }
 
-        public void Update(CpuMetric item)
+        public async Task<CpuMetric> GetById(int id)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using(var connection = new SQLiteConnection(connectionString))
             {
-                connection.Execute("UPDATE cpumetrics SET value = @value, time = @time WHERE id=@id",
+                CpuMetric result = await connection.QuerySingleAsync<CpuMetric>(
+                    "SELECT Id, Time, Value FROM cpumetrics WHERE id=@id",
                     new
                     {
-                        value = item.Value,
-                        time = item.Time,
-                        id = item.ID
+                        id = id
                     });
+                return result;
             }
         }
 
-        public IList<CpuMetric> GetAll()
+        public async Task<List<CpuMetric>> GetByTimePeriod(TimeSpan fromTime, TimeSpan toTime)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
+            {
+                return connection.Query<CpuMetric>(
+                    "SELECT Id, Time, Value FROM cpumetrics WHERE Time >= @fromTime AND Time <= @toTime",
+                    new {
+                        fromTime = fromTime.TotalSeconds,
+                        toTime = toTime.TotalSeconds
+                    }).ToList();
+            }
+
+        }
+
+        public async Task<IList<CpuMetric>> GetAll()
+        {
+            await using (var connection = new SQLiteConnection(connectionString))
             {
                 return connection.Query<CpuMetric>("SELECT Id, Time, Value FROM cpumetrics").ToList();
             }
         }
 
-
-
-
-
-        public CpuMetric GetByID(int id)
+        public async Task Update(CpuMetric item)
         {
-            using (var connection = new SQLiteConnection(ConnectionString))
+            await using (var connection = new SQLiteConnection(connectionString))
             {
-                return connection.QuerySingle<CpuMetric>("SELECT Id, Time, Value FROM cpumetrics WHERE id=@id",
-                    new { id = id });
-            }
-        }
-
-        public IList<CpuMetric> GetCluster(double fromTime, double toTime)
-        {
-            using (var connection = new SQLiteConnection(ConnectionString))
-            {
-                return connection.Query<CpuMetric>("SELECT id, value, time FROM cpumetrics WHERE time>@fromTime AND time<@toTime",
+                await connection.ExecuteAsync("UPDATE cpumetrics SET value = @value, time = @time WHERE id=@id",
                     new
                     {
-                        fromTime = fromTime,
-                        toTime = toTime
-                    }).ToList();
+                        value = item.Value,
+                        time = item.Time.TotalSeconds,
+                        id = item.Id
+                    });
             }
         }
-
     }
 }

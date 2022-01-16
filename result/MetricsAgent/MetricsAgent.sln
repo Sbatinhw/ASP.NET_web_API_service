@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32002.261
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetricsAgent", "MetricsAgent.csproj", "{567826E3-EB36-4CAA-AF75-7C064A5374EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetricsAgentTests", "..\MetricsAgentTests\MetricsAgentTests.csproj", "{D79147BA-EE8E-4D49-ACE6-3371B2346821}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{567826E3-EB36-4CAA-AF75-7C064A5374EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{567826E3-EB36-4CAA-AF75-7C064A5374EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{567826E3-EB36-4CAA-AF75-7C064A5374EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{567826E3-EB36-4CAA-AF75-7C064A5374EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D79147BA-EE8E-4D49-ACE6-3371B2346821}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D79147BA-EE8E-4D49-ACE6-3371B2346821}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D79147BA-EE8E-4D49-ACE6-3371B2346821}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D79147BA-EE8E-4D49-ACE6-3371B2346821}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ECB13C61-BB6E-4B5C-862D-F91D182A7036}
+	EndGlobalSection
+EndGlobal

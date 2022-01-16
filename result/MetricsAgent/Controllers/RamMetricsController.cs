@@ -1,94 +1,56 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using MetricsAgent.DAL.Interfaces;
+using MetricsAgent.DAL.Models;
+using MetricsAgent.Responses;
+using MetricsAgent.Responses.DTO;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using MetricsAgent.Models;
-using MetricsAgent.DAL;
-using AutoMapper;
-using MetricsAgent.Requests;
-using MetricsAgent.Responses;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
-
+using System.Threading.Tasks;
 
 namespace MetricsAgent.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/metrics/ram")]
     [ApiController]
     public class RamMetricsController : ControllerBase
     {
-        private IRamMetricRepository repository;
+        private IRamMetricsRepository repository;
         private readonly IMapper mapper;
-        private readonly ILogger<RamMetricsController> logger;
+        private ILogger logger;
 
-
-        public RamMetricsController(
-            IRamMetricRepository repository, 
-            IMapper mapper,
-            ILogger<RamMetricsController> logger)
+        public RamMetricsController(IRamMetricsRepository repository, IMapper mapper, ILogger<RamMetricsController> logger)
         {
             this.repository = repository;
             this.mapper = mapper;
             this.logger = logger;
         }
 
-        [HttpPost("create")]
-        public IActionResult Create([FromBody] RamMetricCreateRequest request)
+        [HttpGet("cluster/from/{fromTime}/to/{toTime}")]
+        public async Task<IActionResult> GetMetricsByTimePeriod(
+            [FromRoute] TimeSpan fromTime,
+            [FromRoute] TimeSpan toTime)
         {
-            repository.Create(new RamMetric { Time = request.Time, Value = request.Value });
+            logger.LogInformation($"Запрос метрик ОЗУ с {fromTime} по {toTime}");
 
-            Console.WriteLine($"{DateTime.Now} RAM Добавлена метрика: {request.Time} {request.Value}");
-            logger.LogInformation($"RAM Добавлена метрика: {request.Time} {request.Value}");
-
-            return Ok();
-        }
-
-        [HttpGet("all")]
-        public IActionResult GetAll()
-        {
-            var metrics = repository.GetAll();
-
-            var response = new AllRamMetricsResponse()
+            GetRamMetricsResponse result = new GetRamMetricsResponse
             {
                 Metrics = new List<RamMetricDto>()
             };
 
-            foreach (var metric in metrics)
-            {
-                response.Metrics.Add(mapper.Map<RamMetricDto>(metric));
-            }
-
-            Console.WriteLine($"{DateTime.Now} RAM Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"RAM Все метрики. Отдано: {response.Metrics.Count}");
-
-            return Ok(JsonSerializer.Serialize(response));
-        }
-
-        [HttpGet("from/{fromTime}/to/{toTime}")]
-        public IActionResult GetFromCluster(
-            [FromRoute] long fromTime,
-            [FromRoute] long toTime)
-        {
-            var metrics = repository.GetCluster(fromTime, toTime);
-
-            var response = new AllRamMetricsResponse()
-            {
-                Metrics = new List<RamMetricDto>()
-            };
+            List<RamMetric> metrics = await repository.GetByTimePeriod(fromTime, toTime);
 
             foreach (var metric in metrics)
             {
-                response.Metrics.Add(mapper.Map<RamMetricDto>(metric));
+                result.Metrics.Add(mapper.Map<RamMetricDto>(metric));
             }
 
-            Console.WriteLine($"{DateTime.Now} RAM Отдано: {response.Metrics.Count}");
-            logger.LogInformation($"RAM Диапазон: {fromTime} - {toTime} Отдано метрик: {response.Metrics.Count}");
+            logger.LogInformation($"Отдано метрик ОЗУ {result.Metrics.Count}");
 
-            return Ok(JsonSerializer.Serialize(response));
+            return Ok(JsonSerializer.Serialize(result));
         }
-
     }
-
 }
